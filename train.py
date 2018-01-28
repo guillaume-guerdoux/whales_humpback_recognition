@@ -8,6 +8,8 @@ from sklearn.model_selection import train_test_split
 import keras.backend as K
 from keras.optimizers import Adam
 
+# https://www.pyimagesearch.com/2017/12/11/image-classification-with-keras-and-deep-learning/#
+
 config = K.tf.ConfigProto()
 config.gpu_options.allow_growth = True
 session = K.tf.Session(config=config)
@@ -17,8 +19,7 @@ test_data_dir = 'data/test'
 train_labels_path = "data/train.csv"
 
 batch_size = 64
-epochs = 30
-INIT_LR = 1e-3
+epochs = 100
 
 
 def import_images(image_folder, resize_size):
@@ -28,15 +29,11 @@ def import_images(image_folder, resize_size):
     image_dict = {}
     i = 0
     for element in os.listdir(image_folder):
-        if i > 1000:
-            break
-        else:
-            img = cv2.imread(
-                image_folder + "/" + element)
-            img = cv2.resize(img, (resize_size, resize_size))
-            img = img.astype(np.float32)
-            image_dict[element] = img
-            i += 1
+        img = cv2.imread(
+            image_folder + "/" + element)
+        img = cv2.resize(img, (resize_size, resize_size))
+        img = img.astype(np.float32)
+        image_dict[element] = img
     return image_dict
 
 
@@ -69,5 +66,8 @@ if __name__ == "__main__":
                         depth=x_train.shape[3], nb_classes=y_train.shape[1])
     model.compile(loss="categorical_crossentropy", optimizer="adam",
                   metrics=["accuracy"])
-    model.fit(x=x_train, y=y_train, batch_size=batch_size, epochs=20,
+    model.fit(x=x_train, y=y_train, batch_size=batch_size, epochs=epochs,
               verbose=2, validation_split=0.2)
+    # Save model
+    model.save('basic_model.h5')
+    del model
