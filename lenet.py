@@ -3,7 +3,7 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.layers.core import Activation
 from keras.layers.core import Flatten
-from keras.layers.core import Dense
+from keras.layers.core import Dense, Dropout
 from keras import backend as K
 
 
@@ -29,6 +29,7 @@ class LeNet:
         model.add(Flatten())
         model.add(Dense(128))
         model.add(Activation("relu"))
+        model.add(Dropout(0.5))
 
         # softmax classifier
         model.add(Dense(nb_classes))
