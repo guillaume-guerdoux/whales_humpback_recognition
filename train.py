@@ -22,6 +22,17 @@ batch_size = 64
 epochs = 100
 
 
+def read_random_image(df, image_path, resize_size):
+    random_sample = df.sample(n=1)
+    print(random_sample['Image'].iloc[0])
+    img = cv2.imread(
+        image_path + "/" + random_sample['Image'].iloc[0])
+    img = cv2.resize(img, (resize_size, resize_size))
+    gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray_image = gray_image.astype(np.float32)
+    return gray_image
+
+
 def import_images(image_folder, resize_size):
     """ Import images from a folder
     Output : dict('image_name': IMAGE (List of pixels))
@@ -52,7 +63,10 @@ def import_labels(label_path):
 
 
 if __name__ == "__main__":
-    dict_labels, unique_labels = import_labels(train_labels_path)
+    df = pd.read_csv(train_labels_path)
+    img = read_random_image(df, train_data_dir, 227)
+    print(img)
+    '''dict_labels, unique_labels = import_labels(train_labels_path)
     image_dict = import_images(train_data_dir, 128)
     # print(image_dict["0042ea34.jpg"].shape)
     x_train = []
@@ -70,4 +84,4 @@ if __name__ == "__main__":
               verbose=2, validation_split=0.2)
     # Save model
     model.save('basic_model.h5')
-    del model
+    del model'''
