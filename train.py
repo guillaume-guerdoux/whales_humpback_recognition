@@ -15,7 +15,7 @@ test_data_dir = 'data/test'
 train_labels_path = "data/train.csv"
 df = pd.read_csv(train_labels_path)
 
-batch_size = 64
+batch_size = 16
 epochs = 100
 
 
@@ -59,15 +59,15 @@ def data_generator(batch_size, dict_labels, unique_labels, rezise_size):
 
 if __name__ == "__main__":
     dict_labels, unique_labels = import_labels()
-    rezise_size = 128
+    rezise_size = 228
     model = LeNet.build(width=rezise_size, height=rezise_size,
                         depth=1, nb_classes=len(unique_labels))
     model.compile(loss="categorical_crossentropy", optimizer="adam",
                   metrics=["accuracy"])
 
-    model.fit_generator(data_generator(64, dict_labels, unique_labels, rezise_size),
-                        samples_per_epoch=100, nb_epoch=20,
-                        validation_data=data_generator(128, dict_labels, unique_labels, rezise_size),
+    model.fit_generator(data_generator(batch_size, dict_labels, unique_labels, rezise_size),
+                        samples_per_epoch=1000, nb_epoch=20,
+                        validation_data=data_generator(batch_size, dict_labels, unique_labels, rezise_size),
                         validation_steps=10)
     '''model = LeNet.build(width=x_train.shape[1], height=x_train.shape[2],
                         depth=x_train.shape[3], nb_classes=y_train.shape[1])
