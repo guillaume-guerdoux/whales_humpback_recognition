@@ -7,20 +7,33 @@ from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
 import keras.backend as K
 from keras.optimizers import Adam
+from sklearn.model_selection import train_test_split
 
 # https://www.pyimagesearch.com/2017/12/11/image-classification-with-keras-and-deep-learning/#
 
 train_data_dir = 'data/train'
+custom_train_data_dir = 'data/custom_train'
 test_data_dir = 'data/test'
 train_labels_path = "data/train.csv"
-df = pd.read_csv(train_labels_path)
+
+# Remove image not in custom_train
+custom_df = pd.read_csv(train_labels_path)
+custom_train_images_set = set()
+for element in os.listdir(custom_train_data_dir):
+    custom_train_images_set.add(element)
+
+custom_df = custom_df[custom_df['Image'].isin(custom_train_images_set)]
+custom_df_train, custom_df_test = train_test_split(custom_df, test_size=0.2)
 
 batch_size = 16
 epochs = 100
 
 
-def read_random_image(image_path, resize_size):
-    random_sample = df.sample(n=1)
+def read_random_image(image_path, resize_size, train):
+    if train:
+        random_sample = custom_df_train.sample(n=1)
+    else:
+        random_sample = custom_df_test.sample(n=1)
     img_name = random_sample['Image'].iloc[0]
     img = cv2.imread(
         image_path + "/" + img_name)
@@ -36,19 +49,19 @@ def import_labels():
     Output : dict('image_name': 'label')
     """
 
-    dict_labels = df.set_index('Image').to_dict()['Id']
+    dict_labels = custom_df.set_index('Image').to_dict()['Id']
     unique_labels = sorted(list(set(dict_labels.values())))
     for index, label in dict_labels.items():
         dict_labels[index] = unique_labels.index(label)
     return dict_labels, unique_labels
 
 
-def data_generator(batch_size, dict_labels, unique_labels, rezise_size):
+def data_generator(batch_size, dict_labels, unique_labels, rezise_size, train):
     while True:
         x_train = []
         y_train = []
         for i in range(batch_size):
-            img, img_name = read_random_image(train_data_dir, rezise_size)
+            img, img_name = read_random_image(custom_train_data_dir, rezise_size, train)
             x_train.append(img)
             y_train.append(dict_labels[img_name])
         y_train = np_utils.to_categorical(y_train, len(unique_labels))
@@ -65,10 +78,10 @@ if __name__ == "__main__":
     model.compile(loss="categorical_crossentropy", optimizer="adam",
                   metrics=["accuracy"])
 
-    model.fit_generator(data_generator(batch_size, dict_labels, unique_labels, rezise_size),
-                        samples_per_epoch=1000, nb_epoch=20,
-                        validation_data=data_generator(batch_size, dict_labels, unique_labels, rezise_size),
-                        validation_steps=10)
+    model.fit_generator(data_generator(batch_size, dict_labels, unique_labels, rezise_size, True),
+                        samples_per_epoch=250, nb_epoch=20,
+                        validation_data=data_generator(batch_size, dict_labels, unique_labels, rezise_size, False),
+                        validation_steps=60)
     '''model = LeNet.build(width=x_train.shape[1], height=x_train.shape[2],
                         depth=x_train.shape[3], nb_classes=y_train.shape[1])
     model.compile(loss="categorical_crossentropy", optimizer="adam",
