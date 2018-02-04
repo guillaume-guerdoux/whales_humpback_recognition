@@ -40,12 +40,11 @@ def read_random_image(image_path, resize_size, train):
     else:
         random_sample = custom_df_test.sample(n=1)
     img_name = random_sample['Image'].iloc[0]
-    img = cv2.imread(
-        image_path + "/" + img_name)
-    img = cv2.resize(img, (resize_size, resize_size))
-    # gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # gray_image = gray_image.astype(np.float32)
-    return img, img_name
+    gray_img = cv2.imread(
+        image_path + "/" + img_name, cv2.IMREAD_GRAYSCALE)
+    gray_img = cv2.resize(gray_img, (resize_size, resize_size))
+    back_to_rgb_img = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2RGB)
+    return back_to_rgb_img, img_name
 
 
 def import_labels():
