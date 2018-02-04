@@ -3,6 +3,7 @@ import numpy as np
 import os
 import cv2
 from lenet import LeNet
+import random
 from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
 from keras.models import Model
@@ -13,6 +14,10 @@ from sklearn.model_selection import train_test_split
 from keras.layers import Input
 from keras.utils import plot_model
 from keras.layers.core import Flatten
+from image_processing import random_crop
+from image_processing import blur
+from image_processing import random_rotate_zoom
+from image_processing import vertical_flip
 
 # https://www.pyimagesearch.com/2017/12/11/image-classification-with-keras-and-deep-learning/#
 
@@ -37,11 +42,26 @@ epochs = 50
 def read_random_image(image_path, resize_size, train):
     if train:
         random_sample = custom_df_train.sample(n=1)
+        img_name = random_sample['Image'].iloc[0]
+        gray_img = cv2.imread(
+            image_path + "/" + img_name, cv2.IMREAD_GRAYSCALE)
+        crop_chance = random.random()
+        blur_chance = random.random()
+        rotate_zoom_chance = random.random()
+        flip_chance = random.random()
+        if crop_chance <= 1:
+            gray_img = random_crop(gray_img)
+        if blur_chance <= 1:
+            gray_img = blur(gray_img, random.choice([3, 5]))
+        if rotate_zoom_chance <= 1:
+            gray_img = random_rotate_zoom(gray_img)
+        if flip_chance <= 1:
+            gray_img = vertical_flip(gray_img)
     else:
         random_sample = custom_df_test.sample(n=1)
-    img_name = random_sample['Image'].iloc[0]
-    gray_img = cv2.imread(
-        image_path + "/" + img_name, cv2.IMREAD_GRAYSCALE)
+        img_name = random_sample['Image'].iloc[0]
+        gray_img = cv2.imread(
+            image_path + "/" + img_name, cv2.IMREAD_GRAYSCALE)
     gray_img = cv2.resize(gray_img, (resize_size, resize_size))
     back_to_rgb_img = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2RGB)
     return back_to_rgb_img, img_name
